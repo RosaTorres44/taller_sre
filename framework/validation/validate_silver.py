@@ -24,6 +24,9 @@ def main():
             name_null = fetch_one(cur, f"SELECT COUNT(*) FROM {SILVER_TABLE} WHERE dq_is_name_null = true")
             underage = fetch_one(cur, f"SELECT COUNT(*) FROM {SILVER_TABLE} WHERE dq_is_underage = true")
 
+            # NUEVO CHECK: Detecta registros en Silver sin un mapeo de país válido (huérfanos de ref_paises)
+            missing_country = fetch_one(cur, f"SELECT COUNT(*) FROM {SILVER_TABLE} WHERE country_name IS NULL")
+            
             # Guarda resultados en ops_dq_results
             cur.execute(
                 "INSERT INTO gameday.ops_dq_results VALUES (?, current_timestamp(), ?, 'total_rows', 'INFO', ?, ?)",
@@ -39,6 +42,15 @@ def main():
                 "INSERT INTO gameday.ops_dq_results VALUES (?, current_timestamp(), ?, 'underage_count', ?, ?, ?)",
                 (RUN_ID, SILVER_TABLE, "WARN" if underage > 0 else "PASS", float(underage), "age < 18")
             )
+
+            # REGISTRO DEL NUEVO CHECK EN LA TABLA DE AUDITORÍA
+            cur.execute(
+                "INSERT INTO gameday.ops_dq_results VALUES (?, current_timestamp(), ?, 'missing_country_count', ?, ?, ?)",
+                (RUN_ID, SILVER_TABLE, "FAIL" if missing_country > 0 else "PASS", float(missing_country), "country_name is null (ref_paises mapping error)")
+            )
+            # CONDICIÓN DE CORTE: Si hay registros sin país mapeado, se detiene la validación y el pipeline falla
+            if missing_country > 0:
+                raise ValueError(f"❌ Validación fallida: Se encontraron {missing_country} registros en Silver sin mapeo de país en ref_paises.")
 
     print(f"✅ Validation completed: total={total}, name_null={name_null}, underage={underage}")
 

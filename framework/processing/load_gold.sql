@@ -11,3 +11,5 @@ SELECT
 FROM __SILVER_TABLE__
 WHERE dq_status <> 'FAIL_NAME_NULL'
 GROUP BY country_name, region;
+--Asignación de Owner para cumplir con FinOps, para que cumpla con la gobernanza financiera y de costos de la compañía:
+ALTER TABLE gameday.gold_contactables_por_pais SET TAGS ('owner' = 'marketing');
