@@ -1,0 +1,7 @@
+customer_id,name,age,country,email
+21,Joaquín,34,CL,joaquin@example.com
+22,Renata,29,PE,renata@example.com
+23,Benjamín,41,CL,benjamin@example.com
+24,Florencia,25,AR,florencia@example.com
+25,,40,CO,sin_nombre@example.com
+26,Emilia,19,CL,emilia@example.com
