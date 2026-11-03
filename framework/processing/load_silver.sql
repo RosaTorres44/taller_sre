@@ -45,6 +45,15 @@ USING (
     WHERE b.rn = 1
 ) AS s
 ON t.customer_id = s.customer_id
+    -- 1. SI EL CLIENTE YA EXISTE, ACTUALIZA SUS DATOS (INCLUYENDO EL PAÍS CORREGIDO)
+WHEN MATCHED THEN UPDATE SET
+    t.country_code = s.country_code,
+    t.country_name = s.country_name,
+    t.region = s.region,
+    t.status = s.status,
+    t.dq_status = s.dq_status,
+    t.email = s.email,
+    t.customer_name = s.customer_name
 WHEN NOT MATCHED THEN INSERT (
     ingest_ts, customer_id, customer_name, email, status, payload,
     dq_is_name_null, dq_is_underage, dq_status, country_code, country_name, region
@@ -52,3 +61,5 @@ WHEN NOT MATCHED THEN INSERT (
     s.ingest_ts, s.customer_id, s.customer_name, s.email, s.status, s.payload,
     s.dq_is_name_null, s.dq_is_underage, s.dq_status, s.country_code, s.country_name, s.region
 );
+
+
